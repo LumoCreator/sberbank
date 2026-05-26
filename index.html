@@ -2,42 +2,93 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Оформление карты</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Card Terminal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            /* Устанавливаем фоновое изображение */
-            background-image: url('https://raw.githubusercontent.com/LumoCreator/sberbank/refs/heads/main/default_greeting_image.jpeg');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            font-family: sans-serif;
-        }
-
-        .text-container {
-            /* Полупрозрачная подложка, чтобы текст было лучше видно на любом фото */
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 20px 40px;
-            border-radius: 10px;
-        }
-
-        h1 {
-            color: white;
-            margin: 0;
-            text-align: center;
-        }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; background: #1a1a1a; color: white; padding: 20px; }
+        .card { width: 350px; height: 200px; background: linear-gradient(135deg, #00c6ff, #0072ff); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
+        .number { font-size: 22px; letter-spacing: 2px; font-weight: bold; }
+        .info { display: flex; justify-content: space-between; font-size: 14px; }
+        button { padding: 12px 24px; cursor: pointer; border: none; border-radius: 8px; background: #0072ff; color: white; font-weight: bold; margin: 5px; transition: 0.3s; }
+        button:hover { background: #0056b3; }
+        #tokenDisplay { color: #00c6ff; margin: 15px 0; font-size: 1.2em; }
     </style>
 </head>
 <body>
 
-    <div class="text-container">
-        <h1>Попросите создателя оформить Вам карту.</h1>
+    <h2>Генератор шуточных карт</h2>
+
+    <div id="cardArea" class="card">
+        <div>VISA SHUTKA</div>
+        <div class="number" id="cardNum">0000 0000 0000 0000</div>
+        <div class="info">
+            <div id="cardExpiry">12/28</div>
+            <div id="cardCvv">CVV: 000</div>
+        </div>
     </div>
 
+    <h3 id="tokenDisplay">Токен: —</h3>
+    
+    <button id="btnGenerate">Создать карту и сохранить в БД</button>
+    <button onclick="saveCard()">Скачать как фото</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLcyVmvod1E_A3LkLx25N8xzWJ0w4NUwE",
+            authDomain: "sberbank-1.firebaseapp.com",
+            projectId: "sberbank-1",
+            storageBucket: "sberbank-1.firebasestorage.app",
+            messagingSenderId: "123815505506",
+            appId: "1:123815505506:web:551092f0c5f1b79c8dab3b",
+            measurementId: "G-EWJ46Z6ZFP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+
+        document.getElementById('btnGenerate').addEventListener('click', async () => {
+            const token = Math.random().toString(36).substr(2, 9).toUpperCase();
+            const number = "4276 " + Math.floor(1000+Math.random()*9000) + " " + Math.floor(1000+Math.random()*9000) + " 9988";
+            const expiry = "12/28";
+            const cvv = Math.floor(100+Math.random()*900);
+
+            document.getElementById('cardNum').innerText = number;
+            document.getElementById('cardExpiry').innerText = expiry;
+            document.getElementById('cardCvv').innerText = "CVV: " + cvv;
+            document.getElementById('tokenDisplay').innerText = "Токен: " + token;
+
+            try {
+                await setDoc(doc(db, "cards", token), {
+                    number: number,
+                    cvv: cvv,
+                    expiry: expiry,
+                    balance: 5000,
+                    createdAt: new Date().toISOString()
+                });
+                alert("Карта создана и сохранена! Токен: " + token);
+            } catch (e) {
+                console.error("Ошибка Firebase: ", e);
+                alert("Ошибка при сохранении в базу");
+            }
+        });
+    </script>
+
+    <script>
+        function saveCard() {
+            html2canvas(document.querySelector("#cardArea")).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'my-card.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+    </script>
 </body>
 </html>
