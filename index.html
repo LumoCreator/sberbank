@@ -3,42 +3,320 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Card Terminal</title>
+    <title>SberPay — Цифровая карта</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; background: #1a1a1a; color: white; padding: 20px; }
-        .card { width: 350px; height: 200px; background: linear-gradient(135deg, #00c6ff, #0072ff); border-radius: 20px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 20px; }
-        .number { font-size: 22px; letter-spacing: 2px; font-weight: bold; }
-        .info { display: flex; justify-content: space-between; font-size: 14px; }
-        button { padding: 12px 24px; cursor: pointer; border: none; border-radius: 8px; background: #0072ff; color: white; font-weight: bold; margin: 5px; transition: 0.3s; }
-        button:hover { background: #0056b3; }
-        #tokenDisplay { color: #00c6ff; margin: 15px 0; font-size: 1.2em; }
+        :root {
+            --primary: #21A038;
+            --primary-dark: #156d25;
+            --bg-color: #f4f6f8;
+            --text-main: #333;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 40px 20px;
+            color: var(--text-main);
+        }
+
+        .logo {
+            width: 180px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-top: 0;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* Дизайн карты */
+        .card-wrapper {
+            perspective: 1000px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            width: 340px;
+            height: 210px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 20px;
+            padding: 25px;
+            box-sizing: border-box;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 15px 35px rgba(33, 160, 56, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Декоративные круги на фоне карты */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            font-size: 22px;
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        .chip {
+            width: 45px;
+            height: 35px;
+            background: linear-gradient(135deg, #e8c678 0%, #c19b3f 100%);
+            border-radius: 6px;
+            margin-top: 15px;
+            position: relative;
+        }
+
+        .chip::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 0; right: 0; height: 1px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .number {
+            font-family: 'Space Mono', monospace;
+            font-size: 22px;
+            letter-spacing: 2px;
+            margin-top: auto;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+        }
+
+        /* Кнопки */
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(33, 160, 56, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #b0bec5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--text-main);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #f8f9fa;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 24px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 22px;
+        }
+
+        .modal-content ol {
+            padding-left: 20px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .modal-content li {
+            margin-bottom: 8px;
+        }
+
+        .code-block {
+            background: #f4f6f8;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Space Mono', monospace;
+            color: var(--primary-dark);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            border: 1px solid #e0e0e0;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 5px;
+        }
+
+        /* Уведомления (Toast) */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
 
-    <h2>Генератор шуточных карт</h2>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Sberbank_logo.svg/2560px-Sberbank_logo.svg.png" alt="Sberbank" class="logo">
+    <h2>Цифровая карта SberPay</h2>
 
-    <div id="cardArea" class="card">
-        <div>VISA SHUTKA</div>
-        <div class="number" id="cardNum">0000 0000 0000 0000</div>
-        <div class="info">
-            <div id="cardExpiry">12/28</div>
-            <div id="cardCvv">CVV: 000</div>
+    <div class="card-wrapper" id="cardArea">
+        <div class="card">
+            <div class="card-header">
+                <span>VISA</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.31l1.6 1.6c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-2.31-2.31c-.19-.19-.29-.44-.29-.71V7c0-.55.45-1 1-1s1 .45 1 1v4.29l1.6-1.6c.39-.39 1.02-.39 1.41 0 .38.39.38 1.03 0 1.42z" fill="white" opacity="0.8"/>
+                </svg>
+            </div>
+            <div class="chip"></div>
+            <div class="number" id="cardNum">4276 0000 0000 0000</div>
+            <div class="info">
+                <div id="cardExpiry">12/28</div>
+                <div id="cardCvv">CVV: 000</div>
+            </div>
         </div>
     </div>
 
-    <h3 id="tokenDisplay">Токен: —</h3>
-    
-    <button id="btnGenerate">Создать карту и сохранить в БД</button>
-    <button onclick="saveCard()">Скачать как фото</button>
+    <div class="controls">
+        <button id="btnGenerate" class="btn">Создать новую карту</button>
+        <button id="btnSave" class="btn btn-secondary">Скачать как фото</button>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>Инструкция по настройке</h3>
+            <ol>
+                <li>Откройте приложение <b>Команды</b>.</li>
+                <li>Перейдите в раздел <b>Автоматизация</b>.</li>
+                <li>Нажмите: <b>Новая Автоматизация</b>.</li>
+                <li>Спуститесь и выберите <b>NFC</b>.</li>
+                <li>Нажмите: <b>Сканировать</b>, прислоните метку и дайте ей название.</li>
+                <li>Нажмите <b>Немедленный запуск</b> и продолжите.</li>
+                <li>Нажмите <b>Создать новую команду</b>.</li>
+                <li>Добавьте действие <b>Открыть URL</b>.</li>
+                <li>Вставьте вашу уникальную ссылку ниже:</li>
+            </ol>
+            
+            <div class="code-block">
+                <span id="tokenLink">terminal://...</span>
+                <button class="copy-btn" id="btnCopy">Копировать</button>
+            </div>
+
+            <button class="btn" style="width: 100%; margin-top: 25px;" id="btnCloseModal">Готово</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Уведомление</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
 
+        // Конфигурация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDLcyVmvod1E_A3LkLx25N8xzWJ0w4NUwE",
             authDomain: "sberbank-1.firebaseapp.com",
@@ -53,42 +331,110 @@
         const db = getFirestore(app);
         const analytics = getAnalytics(app);
 
-        document.getElementById('btnGenerate').addEventListener('click', async () => {
+        // Элементы DOM
+        const btnGenerate = document.getElementById('btnGenerate');
+        const btnSave = document.getElementById('btnSave');
+        const modal = document.getElementById('modal');
+        const btnCloseModal = document.getElementById('btnCloseModal');
+        const btnCopy = document.getElementById('btnCopy');
+        const toastEl = document.getElementById('toast');
+
+        // Функция показа уведомлений
+        function showToast(message) {
+            toastEl.innerText = message;
+            toastEl.classList.add('show');
+            setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // Генерация карты
+        btnGenerate.addEventListener('click', async () => {
+            // Включаем Cooldown (10 секунд)
+            btnGenerate.disabled = true;
+            let timer = 10;
+            const originalText = "Создать новую карту";
+            
+            const interval = setInterval(() => {
+                btnGenerate.innerText = `Подождите ${timer--} сек`;
+                if (timer < 0) {
+                    clearInterval(interval);
+                    btnGenerate.disabled = false;
+                    btnGenerate.innerText = originalText;
+                }
+            }, 1000);
+
+            // Генерация данных
             const token = Math.random().toString(36).substr(2, 9).toUpperCase();
             const number = "4276 " + Math.floor(1000+Math.random()*9000) + " " + Math.floor(1000+Math.random()*9000) + " 9988";
-            const expiry = "12/28";
             const cvv = Math.floor(100+Math.random()*900);
-
+            const expiry = "12/28";
+            
+            // Обновление интерфейса карты
             document.getElementById('cardNum').innerText = number;
-            document.getElementById('cardExpiry').innerText = expiry;
             document.getElementById('cardCvv').innerText = "CVV: " + cvv;
-            document.getElementById('tokenDisplay').innerText = "Токен: " + token;
+            document.getElementById('cardExpiry').innerText = expiry;
+            
+            const deepLink = "terminal://" + token;
+            document.getElementById('tokenLink').innerText = deepLink;
 
+            // Запись в Firebase
             try {
-                await setDoc(doc(db, "cards", token), {
-                    number: number,
+                await setDoc(doc(db, "cards", token), { 
+                    number: number, 
                     cvv: cvv,
                     expiry: expiry,
                     balance: 5000,
                     createdAt: new Date().toISOString()
                 });
-                alert("Карта создана и сохранена! Токен: " + token);
-            } catch (e) {
-                console.error("Ошибка Firebase: ", e);
-                alert("Ошибка при сохранении в базу");
+                
+                showToast("Карта успешно создана!");
+                
+                // Показываем инструкцию
+                setTimeout(() => {
+                    modal.classList.add('active');
+                }, 500);
+
+            } catch (error) {
+                console.error("Ошибка Firebase:", error);
+                showToast("Ошибка при сохранении в базу!");
             }
         });
-    </script>
 
-    <script>
-        function saveCard() {
-            html2canvas(document.querySelector("#cardArea")).then(canvas => {
+        // Скачивание карты как фото
+        btnSave.addEventListener('click', () => {
+            showToast("Подготовка изображения...");
+            const target = document.getElementById("cardArea");
+            
+            html2canvas(target, {
+                backgroundColor: null,
+                scale: 2 // Улучшает качество картинки
+            }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'my-card.png';
+                link.download = 'sberpay-card.png';
                 link.href = canvas.toDataURL();
                 link.click();
+                showToast("Карта скачана!");
             });
-        }
+        });
+
+        // Закрытие модального окна
+        btnCloseModal.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        // Копирование ссылки
+        btnCopy.addEventListener('click', () => {
+            const linkText = document.getElementById('tokenLink').innerText;
+            navigator.clipboard.writeText(linkText).then(() => {
+                const originalText = btnCopy.innerText;
+                btnCopy.innerText = "Скопировано!";
+                showToast("Ссылка скопирована в буфер обмена");
+                setTimeout(() => {
+                    btnCopy.innerText = originalText;
+                }, 2000);
+            });
+        });
     </script>
 </body>
 </html>
