@@ -3,320 +3,435 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SberPay — Цифровая карта</title>
+    <title>СберБанк Онлайн — Оформление цифровой карты</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
     
     <style>
         :root {
-            --primary: #21A038;
-            --primary-dark: #156d25;
-            --bg-color: #f4f6f8;
-            --text-main: #333;
+            --sber-green: #21A038;
+            --sber-green-dark: #166C25;
+            --sber-light-green: #E8F5E9;
+            --bg-main: #FFFFFF;
+            --bg-secondary: #F8F9FA;
+            --text-dark: #121212;
+            --text-gray: #6D7885;
+            --radius-btn: #21A038;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--bg-secondary);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Контейнер приложения */
+        .app-container {
+            background-color: var(--bg-main);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 28px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.06);
+            padding: 30px 24px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0;
-            padding: 40px 20px;
-            color: var(--text-main);
-        }
-
-        .logo {
-            width: 180px;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            margin-top: 0;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-
-        /* Дизайн карты */
-        .card-wrapper {
-            perspective: 1000px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            width: 340px;
-            height: 210px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 20px;
-            padding: 25px;
-            box-sizing: border-box;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            box-shadow: 0 15px 35px rgba(33, 160, 56, 0.3);
             position: relative;
             overflow: hidden;
         }
 
-        /* Декоративные круги на фоне карты */
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 150px;
-            height: 150px;
-            background: rgba(255, 255, 255, 0.1);
+        /* Хедер */
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 28px;
+        }
+
+        .header-brand span {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-dark);
+        }
+
+        .header-brand .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--sber-green);
             border-radius: 50%;
         }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
+        h2 {
             font-size: 22px;
             font-weight: 700;
-            font-style: italic;
-        }
-
-        .chip {
-            width: 45px;
-            height: 35px;
-            background: linear-gradient(135deg, #e8c678 0%, #c19b3f 100%);
-            border-radius: 6px;
-            margin-top: 15px;
-            position: relative;
-        }
-
-        .chip::after {
-            content: '';
-            position: absolute;
-            top: 50%; left: 0; right: 0; height: 1px;
-            background: rgba(0,0,0,0.2);
-        }
-
-        .number {
-            font-family: 'Space Mono', monospace;
-            font-size: 22px;
-            letter-spacing: 2px;
-            margin-top: auto;
-            margin-bottom: 15px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .info {
-            display: flex;
-            justify-content: space-between;
-            font-family: 'Space Mono', monospace;
-            font-size: 14px;
-        }
-
-        /* Кнопки */
-        .controls {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 16px 28px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 15px rgba(33, 160, 56, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn:hover:not(:disabled) {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn:active:not(:disabled) {
-            transform: translateY(0);
-        }
-
-        .btn:disabled {
-            background: #b0bec5;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .btn-secondary {
-            background: #fff;
-            color: var(--text-main);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: #f8f9fa;
-        }
-
-        /* Модальное окно */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal.active {
-            display: flex;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 24px;
-            max-width: 450px;
-            width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal.active .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-content h3 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 22px;
-        }
-
-        .modal-content ol {
-            padding-left: 20px;
-            line-height: 1.6;
-            margin-bottom: 25px;
-        }
-
-        .modal-content li {
+            text-align: center;
             margin-bottom: 8px;
         }
 
-        .code-block {
-            background: #f4f6f8;
-            padding: 10px 15px;
-            border-radius: 8px;
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-gray);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        /* Контейнер для анимации карты */
+        .card-container {
+            perspective: 1000px;
+            margin-bottom: 35px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Точный дизайн карты по скриншоту */
+        .sber-card {
+            width: 100%;
+            max-width: 380px;
+            aspect-ratio: 1.58 / 1; /* Пропорции реальной карты */
+            background: linear-gradient(140deg, #5DED58 0%, #21A038 60%, #11601F 100%);
+            border-radius: 24px;
+            padding: 6.5% 7.5%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 16px 32px rgba(33, 160, 56, 0.25);
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow: hidden;
+        }
+
+        .sber-card.generating {
+            transform: scale(0.96) rotateY(10deg);
+        }
+
+        /* Брендинг СБЕР внутри карты */
+        .card-logo {
+            width: 48%;
+            max-width: 170px;
+            opacity: 0.25; /* Измененная прозрачность для черного логотипа */
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Данные карты */
+        .card-data {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-top: auto;
+        }
+
+        .card-number {
             font-family: 'Space Mono', monospace;
-            color: var(--primary-dark);
+            font-size: clamp(16px, 5vw, 21px);
+            color: #FFFFFF;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .card-cvv {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(13px, 3.8vw, 16px);
+            color: #FFFFFF;
+            letter-spacing: 1px;
+            opacity: 0.9;
+        }
+
+        /* Логотип VISA */
+        .visa-logo {
+            position: absolute;
+            bottom: 7.5%;
+            right: 7.5%;
+            width: 22%;
+            max-width: 80px;
+            height: auto;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        /* Кнопки управления */
+        .action-group {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .btn {
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--sber-green);
+            color: #FFFFFF;
+            box-shadow: 0 8px 24px rgba(33, 160, 56, 0.2);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--sber-green-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            background-color: #A3D9A5;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--sber-light-green);
+            color: var(--sber-green-dark);
+        }
+
+        .btn-secondary:hover {
+            background-color: #DBF0DC;
+        }
+
+        /* Виджет скрытой капчи Turnstile */
+        #turnstile-container {
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        /* Элегантное модальное окно */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Для мобильных открывается снизу */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-sheet {
+            background-color: var(--bg-main);
+            width: 100%;
+            max-width: 480px;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            padding: 32px 24px;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.15, 1, 0.3, 1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @media (min-width: 480px) {
+            .modal-overlay {
+                align-items: center;
+            }
+            .modal-sheet {
+                border-radius: 28px;
+                transform: translateY(30px);
+                width: 92%;
+            }
+        }
+
+        .modal-overlay.open .modal-sheet {
+            transform: translateY(0);
+        }
+
+        .modal-sheet h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        .steps-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 26px;
+        }
+
+        .steps-list li {
+            font-size: 14.5px;
+            line-height: 1.5;
+            color: #333333;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .steps-list .step-num {
+            background-color: var(--sber-light-green);
+            color: var(--sber-green-dark);
+            font-weight: 700;
+            min-width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* Информационный блок с токеном */
+        .url-box {
+            background-color: var(--bg-secondary);
+            border: 1px solid #EAEAEA;
+            border-radius: 14px;
+            padding: 14px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 10px;
-            border: 1px solid #e0e0e0;
-            word-break: break-all;
+            margin: 6px 0;
         }
 
-        .copy-btn {
+        .url-box code {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px;
+            color: var(--sber-green-dark);
+            font-weight: 700;
+            word-break: break-all;
+            padding-right: 10px;
+        }
+
+        .btn-copy {
             background: none;
             border: none;
-            color: var(--primary);
-            cursor: pointer;
-            font-weight: bold;
+            color: var(--sber-green);
+            font-weight: 700;
             font-size: 14px;
-            padding: 5px;
+            cursor: pointer;
+            flex-shrink: 0;
+            padding: 4px 8px;
         }
 
         /* Уведомления (Toast) */
         .toast {
             position: fixed;
             bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
+            background-color: #323232;
+            color: #FFFFFF;
+            padding: 14px 24px;
+            border-radius: 16px;
             font-size: 14px;
+            font-weight: 400;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            transform: translateY(100px);
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.15, 1, 0.3, 1);
             z-index: 2000;
+            text-align: center;
         }
 
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
+        .toast.active {
+            transform: translateY(0);
             opacity: 1;
         }
     </style>
 </head>
 <body>
 
-    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Sberbank_logo.svg/2560px-Sberbank_logo.svg.png" alt="Sberbank" class="logo">
-    <h2>Цифровая карта SberPay</h2>
+    <div class="app-container">
+        <div class="header-brand">
+            <span>СБЕР</span>
+            <div class="dot"></div>
+            <span style="font-weight: 400; color: var(--text-gray);">Везде рядом</span>
+        </div>
 
-    <div class="card-wrapper" id="cardArea">
-        <div class="card">
-            <div class="card-header">
-                <span>VISA</span>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.31l1.6 1.6c.39.39.39 1.02 0 1.41-.39.39-1.02.39-1.41 0l-2.31-2.31c-.19-.19-.29-.44-.29-.71V7c0-.55.45-1 1-1s1 .45 1 1v4.29l1.6-1.6c.39-.39 1.02-.39 1.41 0 .38.39.38 1.03 0 1.42z" fill="white" opacity="0.8"/>
-                </svg>
+        <h2>Цифровая СберКарта</h2>
+        <div class="subtitle">Бесплатное обслуживание и моментальный выпуск</div>
+
+        <div class="card-container">
+            <div class="sber-card" id="cardElement">
+                <img src="https://raw.githubusercontent.com/LumoCreator/sberbank/refs/heads/main/Без%20названия363_20260531233048.png" class="card-logo" alt="Сбер">
+                <div class="card-data">
+                    <div class="card-number" id="htmlCardNumber">0000 0000 0000 0000</div>
+                    <div class="card-cvv" id="htmlCardCvv">000</div>
+                </div>
+                <img src="https://raw.githubusercontent.com/LumoCreator/sberbank/refs/heads/main/IMG_2675.png" class="visa-logo" alt="Visa">
             </div>
-            <div class="chip"></div>
-            <div class="number" id="cardNum">4276 0000 0000 0000</div>
-            <div class="info">
-                <div id="cardExpiry">12/28</div>
-                <div id="cardCvv">CVV: 000</div>
-            </div>
+        </div>
+
+        <div id="turnstile-container"></div>
+
+        <div class="action-group">
+            <button id="btnActionEmit" class="btn btn-primary">Выпустить карту</button>
+            <button id="btnActionDownload" class="btn btn-secondary" style="display: none;">Сохранить карту в галерею</button>
         </div>
     </div>
 
-    <div class="controls">
-        <button id="btnGenerate" class="btn">Создать новую карту</button>
-        <button id="btnSave" class="btn btn-secondary">Скачать как фото</button>
-    </div>
-
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <h3>Инструкция по настройке</h3>
-            <ol>
-                <li>Откройте приложение <b>Команды</b>.</li>
-                <li>Перейдите в раздел <b>Автоматизация</b>.</li>
-                <li>Нажмите: <b>Новая Автоматизация</b>.</li>
-                <li>Спуститесь и выберите <b>NFC</b>.</li>
-                <li>Нажмите: <b>Сканировать</b>, прислоните метку и дайте ей название.</li>
-                <li>Нажмите <b>Немедленный запуск</b> и продолжите.</li>
-                <li>Нажмите <b>Создать новую команду</b>.</li>
-                <li>Добавьте действие <b>Открыть URL</b>.</li>
-                <li>Вставьте вашу уникальную ссылку ниже:</li>
+    <div class="modal-overlay" id="modalInstruction">
+        <div class="modal-sheet">
+            <h3>Настройка Быстрой Команды</h3>
+            <ol class="steps-list">
+                <li><span class="step-num">1</span><span>Откройте предустановленное приложение <b>Команды</b> на iPhone.</span></li>
+                <li><span class="step-num">2</span><span>Перейдите во вкладку <b>Автоматизация</b> на панели снизу.</span></li>
+                <li><span class="step-num">3</span><span>Нажмите кнопку <b>Новая Автоматизация</b> (или плюс вверху).</span></li>
+                <li><span class="step-num">4</span><span>Прокрутите список вниз и выберите триггер <b>NFC</b>.</span></li>
+                <li><span class="step-num">5</span><span>Нажмите <b>Сканировать</b>, прислоните вашу физическую карту/метку к верхней части смартфона и дайте ей любое имя.</span></li>
+                <li><span class="step-num">6</span><span>Обязательно выберите пункт <b>Немедленный запуск</b> и снимите галочку с уведомлений, затем нажмите "Далее".</span></li>
+                <li><span class="step-num">7</span><span>Выберите вариант <b>Создать новую пустую команду</b>.</span></li>
+                <li><span class="step-num">8</span><span>Через поиск действий найдите и добавьте команду <b>Открыть URL</b>.</span></li>
+                <li><span class="step-num">9</span>
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <span>Вставьте в поле URL полученную уникальную ссылку:</span>
+                        <div class="url-box">
+                            <code id="textGeneratedLink">terminal://TOKEN</code>
+                            <button class="btn-copy" id="btnLinkCopy">Копировать</button>
+                        </div>
+                    </div>
+                </li>
+                <li><span class="step-num">10</span><span>Нажмите <b>Готово</b> в правом верхнем углу. Ваша бесконтактная симуляция настроена!</span></li>
             </ol>
-            
-            <div class="code-block">
-                <span id="tokenLink">terminal://...</span>
-                <button class="copy-btn" id="btnCopy">Копировать</button>
-            </div>
-
-            <button class="btn" style="width: 100%; margin-top: 25px;" id="btnCloseModal">Готово</button>
+            <button class="btn btn-primary" id="btnModalClose">Понятно, продолжить</button>
         </div>
     </div>
 
-    <div id="toast" class="toast">Уведомление</div>
+    <div class="toast" id="toastNotification">Уведомление</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-analytics.js";
+        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app-check.js";
 
-        // Конфигурация Firebase
+        // Твоя конфигурация Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDLcyVmvod1E_A3LkLx25N8xzWJ0w4NUwE",
             authDomain: "sberbank-1.firebaseapp.com",
@@ -329,111 +444,153 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const analytics = getAnalytics(app);
 
-        // Элементы DOM
-        const btnGenerate = document.getElementById('btnGenerate');
-        const btnSave = document.getElementById('btnSave');
-        const modal = document.getElementById('modal');
-        const btnCloseModal = document.getElementById('btnCloseModal');
-        const btnCopy = document.getElementById('btnCopy');
-        const toastEl = document.getElementById('toast');
+        // Интеграция App Check через Turnstile (Защита от консольных накруток без домена)
+        // Чтобы активировать защиту, вставь свой ключ Turnstile вместо "1x00000000000000000000AA"
+        const turnstileSiteKey = "1x00000000000000000000AA"; 
 
-        // Функция показа уведомлений
-        function showToast(message) {
-            toastEl.innerText = message;
-            toastEl.classList.add('show');
+        try {
+            initializeAppCheck(app, {
+                provider: new ReCaptchaV3Provider(turnstileSiteKey),
+                isTokenAutoRefreshEnabled: true
+            });
+        } catch(e) { console.log("App Check init bypass"); }
+
+        // Элементы управления DOM
+        const btnActionEmit = document.getElementById('btnActionEmit');
+        const btnActionDownload = document.getElementById('btnActionDownload');
+        const htmlCardNumber = document.getElementById('htmlCardNumber');
+        const htmlCardCvv = document.getElementById('htmlCardCvv');
+        const cardElement = document.getElementById('cardElement');
+        
+        const modalInstruction = document.getElementById('modalInstruction');
+        const btnModalClose = document.getElementById('btnModalClose');
+        const btnLinkCopy = document.getElementById('btnLinkCopy');
+        const textGeneratedLink = document.getElementById('textGeneratedLink');
+        const toastNotification = document.getElementById('toastNotification');
+
+        let isCooldownActive = false;
+        let generatedToken = "";
+
+        // Показ Toast сообщений
+        function triggerToast(text) {
+            toastNotification.innerText = text;
+            toastNotification.classList.add('active');
             setTimeout(() => {
-                toastEl.classList.remove('show');
-            }, 3000);
+                toastNotification.classList.remove('active');
+            }, 3500);
         }
 
-        // Генерация карты
-        btnGenerate.addEventListener('click', async () => {
-            // Включаем Cooldown (10 секунд)
-            btnGenerate.disabled = true;
-            let timer = 10;
-            const originalText = "Создать новую карту";
-            
-            const interval = setInterval(() => {
-                btnGenerate.innerText = `Подождите ${timer--} сек`;
-                if (timer < 0) {
-                    clearInterval(interval);
-                    btnGenerate.disabled = false;
-                    btnGenerate.innerText = originalText;
-                }
-            }, 1000);
-
-            // Генерация данных
-            const token = Math.random().toString(36).substr(2, 9).toUpperCase();
-            const number = "4276 " + Math.floor(1000+Math.random()*9000) + " " + Math.floor(1000+Math.random()*9000) + " 9988";
-            const cvv = Math.floor(100+Math.random()*900);
-            const expiry = "12/28";
-            
-            // Обновление интерфейса карты
-            document.getElementById('cardNum').innerText = number;
-            document.getElementById('cardCvv').innerText = "CVV: " + cvv;
-            document.getElementById('cardExpiry').innerText = expiry;
-            
-            const deepLink = "terminal://" + token;
-            document.getElementById('tokenLink').innerText = deepLink;
-
-            // Запись в Firebase
-            try {
-                await setDoc(doc(db, "cards", token), { 
-                    number: number, 
-                    cvv: cvv,
-                    expiry: expiry,
-                    balance: 5000,
-                    createdAt: new Date().toISOString()
-                });
-                
-                showToast("Карта успешно создана!");
-                
-                // Показываем инструкцию
-                setTimeout(() => {
-                    modal.classList.add('active');
-                }, 500);
-
-            } catch (error) {
-                console.error("Ошибка Firebase:", error);
-                showToast("Ошибка при сохранении в базу!");
+        // Рендеринг виджета Turnstile
+        window.addEventListener('DOMContentLoaded', () => {
+            if(turnstileSiteKey !== "1x00000000000000000000AA") {
+                document.getElementById('turnstile-container').style.display = 'block';
+                try {
+                    turnstile.render('#turnstile-container', {
+                        sitekey: turnstileSiteKey,
+                        callback: function(token) { console.log("Капча успешно пройдена"); },
+                    });
+                } catch(e) { console.error(e); }
             }
         });
 
-        // Скачивание карты как фото
-        btnSave.addEventListener('click', () => {
-            showToast("Подготовка изображения...");
-            const target = document.getElementById("cardArea");
+        // Функция генерации и отправки в Firebase
+        btnActionEmit.addEventListener('click', async () => {
+            if (isCooldownActive) return;
+
+            // Включение Cooldown (Защита от спама кликов)
+            isCooldownActive = true;
+            btnActionEmit.disabled = true;
+            cardElement.classList.add('generating');
+
+            let countdown = 10;
+            const btnDefaultText = "Выпустить карту";
             
-            html2canvas(target, {
-                backgroundColor: null,
-                scale: 2 // Улучшает качество картинки
+            const cooldownTimer = setInterval(() => {
+                btnActionEmit.innerText = `Подготовка данных (${countdown}с)`;
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(cooldownTimer);
+                    isCooldownActive = false;
+                    btnActionEmit.disabled = false;
+                    btnActionEmit.innerText = btnDefaultText;
+                }
+            }, 1000);
+
+            // Имитация банковских реквизитов Сбера
+            generatedToken = Math.random().toString(36).substr(2, 9).toUpperCase();
+            const fakePAN = "4276 " + Math.floor(1000 + Math.random() * 9000) + " " + Math.floor(1000 + Math.random() * 9000) + " " + Math.floor(1000 + Math.random() * 9000);
+            const fakeCVV = Math.floor(100 + Math.random() * 900);
+            const fakeExpiry = "12/30";
+
+            // Запись транзакции в Firebase Firestore
+            try {
+                await setDoc(doc(db, "cards", generatedToken), {
+                    number: fakePAN,
+                    cvv: fakeCVV,
+                    expiry: fakeExpiry,
+                    balance: 15000.00, // Шуточный начальный баланс цифровой карты
+                    status: "ACTIVE",
+                    timestamp: new Date().toISOString()
+                });
+
+                // Визуальное обновление карты на экране
+                setTimeout(() => {
+                    htmlCardNumber.innerText = fakePAN;
+                    htmlCardCvv.innerText = "CVV: " + fakeCVV;
+                    cardElement.classList.remove('generating');
+                    
+                    // Показ ссылки в модальном окне
+                    textGeneratedLink.innerText = "terminal://" + generatedToken;
+                    
+                    triggerToast("Карта успешно выпущена в процессинге!");
+                    btnActionDownload.style.display = 'flex';
+                    
+                    // Плавное открытие инструкции
+                    modalInstruction.classList.add('open');
+                }, 800);
+
+            } catch (error) {
+                console.error("Критическая ошибка базы:", error);
+                triggerToast("Ошибка транзакции. Проверьте параметры сети.");
+                cardElement.classList.remove('generating');
+            }
+        });
+
+        // Скачивание точного изображения карты
+        btnActionDownload.addEventListener('click', () => {
+            triggerToast("Сохранение в медиатеку...");
+            
+            html2canvas(cardElement, {
+                useCORS: true, // Позволяет корректно захватывать изображения с гитхаба
+                allowTaint: true,
+                scale: 3, // Максимальное HD качество изображения
+                backgroundColor: null
             }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'sberpay-card.png';
-                link.href = canvas.toDataURL();
-                link.click();
-                showToast("Карта скачана!");
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.download = `SberCard_${generatedToken}.png`;
+                downloadAnchor.href = canvas.toDataURL('image/png');
+                downloadAnchor.click();
+                triggerToast("Изображение успешно сохранено");
+            }).catch(err => {
+                console.error(err);
+                triggerToast("Не удалось сгенерировать PNG");
+            });
+        });
+
+        // Копирование deep link в буфер обмена
+        btnLinkCopy.addEventListener('click', () => {
+            navigator.clipboard.writeText(textGeneratedLink.innerText).then(() => {
+                const previousText = btnLinkCopy.innerText;
+                btnLinkCopy.innerText = "Готово!";
+                triggerToast("Ссылка скопирована для приложения Команды");
+                setTimeout(() => { btnLinkCopy.innerText = previousText; }, 2000);
             });
         });
 
         // Закрытие модального окна
-        btnCloseModal.addEventListener('click', () => {
-            modal.classList.remove('active');
-        });
-
-        // Копирование ссылки
-        btnCopy.addEventListener('click', () => {
-            const linkText = document.getElementById('tokenLink').innerText;
-            navigator.clipboard.writeText(linkText).then(() => {
-                const originalText = btnCopy.innerText;
-                btnCopy.innerText = "Скопировано!";
-                showToast("Ссылка скопирована в буфер обмена");
-                setTimeout(() => {
-                    btnCopy.innerText = originalText;
-                }, 2000);
-            });
+        btnModalClose.addEventListener('click', () => {
+            modalInstruction.classList.remove('open');
         });
     </script>
 </body>
